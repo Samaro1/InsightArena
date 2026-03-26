@@ -332,23 +332,3 @@ impl InviteCode {
         }
     }
 }
-
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct LeaderboardEntry {
-    /// The wallet address of the participant.
-    pub address: Address,
-    /// Points accumulated by the participant during the season.
-    pub points: u32,
-}
-
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct LeaderboardSnapshot {
-    /// Unique identifier for the season.
-    pub season_id: u32,
-    /// Ledger timestamp when the snapshot was recorded.
-    pub timestamp: u64,
-    /// Ranked list of participants and their scores.
-    pub entries: Vec<LeaderboardEntry>,
-}
