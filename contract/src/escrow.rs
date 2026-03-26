@@ -86,6 +86,30 @@ pub fn release_payout(env: &Env, to: &Address, amount: i128) -> Result<(), Insig
     Ok(())
 }
 
+/// Transfer accumulated fee to a designated treasury or creator address.
+///
+/// This moves funds out of the shared prediction pool.
+///
+/// # Errors
+/// - `InvalidInput` when `amount <= 0`.
+/// - `EscrowEmpty` if the contract lacks sufficient balance.
+pub fn transfer_fee(env: &Env, to: &Address, amount: i128) -> Result<(), InsightArenaError> {
+    if amount <= 0 {
+        return Err(InsightArenaError::InvalidInput);
+    }
+
+    let cfg = config::get_config(env)?;
+    let client = token::Client::new(env, &cfg.xlm_token);
+    let contract = env.current_contract_address();
+
+    if client.balance(&contract) < amount {
+        return Err(InsightArenaError::EscrowEmpty);
+    }
+
+    client.transfer(&contract, to, &amount);
+    Ok(())
+}
+
 #[cfg(test)]
 mod escrow_tests {
     use soroban_sdk::testutils::Address as _;
