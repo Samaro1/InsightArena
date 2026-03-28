@@ -143,8 +143,8 @@ describe('HealthController', () => {
   });
 
   describe('checkPing', () => {
-    it('should return ping status', async () => {
-      const result = await controller.checkPing();
+    it('should return ping status', () => {
+      const result = controller.checkPing();
 
       expect(result).toBeDefined();
       expect(result.status).toBe('ok');
@@ -152,8 +152,8 @@ describe('HealthController', () => {
       expect(result.timestamp).toBeDefined();
     });
 
-    it('should return valid ISO timestamp', async () => {
-      const result = await controller.checkPing();
+    it('should return valid ISO timestamp', () => {
+      const result = controller.checkPing();
 
       const timestamp = new Date(result.timestamp);
       expect(timestamp instanceof Date).toBe(true);

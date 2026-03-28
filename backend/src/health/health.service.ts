@@ -58,7 +58,7 @@ export class HealthService {
    * Simple endpoint for HTTP health check (no recursion)
    * Used by the main health check to ping the service
    */
-  async checkPing() {
+  checkPing() {
     return {
       status: 'ok',
       type: 'ping',

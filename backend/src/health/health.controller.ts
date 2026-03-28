@@ -30,7 +30,7 @@ export class HealthController {
     status: 200,
     description: 'Service is up',
   })
-  async checkPing() {
+  checkPing() {
     return this.healthService.checkPing();
   }
 }
