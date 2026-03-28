@@ -179,7 +179,7 @@ describe('AnalyticsService', () => {
   it('uses rank 0 when there is no global leaderboard row', async () => {
     usersRepository.findOne.mockResolvedValue(baseUser);
     leaderboardRepository.createQueryBuilder.mockReturnValue(
-      mockLeaderboardQb(null) as any,
+      mockLeaderboardQb(null) as SelectQueryBuilder<LeaderboardEntry>,
     );
 
     let call = 0;
@@ -203,7 +203,7 @@ describe('AnalyticsService', () => {
   it('breaks streak on first loss in resolution order', async () => {
     usersRepository.findOne.mockResolvedValue(baseUser);
     leaderboardRepository.createQueryBuilder.mockReturnValue(
-      mockLeaderboardQb(null) as any,
+      mockLeaderboardQb(null) as SelectQueryBuilder<LeaderboardEntry>,
     );
 
     const mYes = {
