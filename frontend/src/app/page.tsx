@@ -4,16 +4,18 @@ import Head from "next/head";
 import Header from "@/component/Header";
 import Footer from "@/component/Footer";
 import HeroSection from "@/component/Homepage/HeroSection";
+
 import FeaturedThisWeek from "@/component/Homepage/FeaturedThisWeek";
 
-import HowItWorksSection from "@/component/Homepage/HowItWorksSection";
 
+import HowItWorksSection from "@/component/Homepage/HowItWorksSection";
 import ReputationSection from "@/component/Homepage/ReputationSection";
 import Faq from "@/component/Homepage/Faq";
 import Feature from "@/component/Homepage/Feature";
 import ComparisonSection from "@/component/Homepage/ComparisonSection";
 import TransparentGrid from "@/component/Homepage/Transparent";
 import StatisticsSection from "@/component/Homepage/StatisticsSection";
+import PageBackground from "@/component/PageBackground";
 
 export default function Home() {
   return (
@@ -21,6 +23,7 @@ export default function Home() {
       <Head>
         <title>InsightArena | Decentralized Prediction Market</title>
       </Head>
+
       <div className="relative min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 overflow-x-hidden">
         {/* Global Network Lines Background */}
         <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
@@ -82,6 +85,20 @@ export default function Home() {
           <Footer />
         </div>
       </div>
+
+      <PageBackground>
+        <Header />
+        <HeroSection />
+        <ReputationSection />
+        <Feature />
+        <HowItWorksSection />
+        <ComparisonSection />
+        <TransparentGrid />
+        <StatisticsSection />
+        <Faq />
+        <Footer />
+      </PageBackground>
+
     </>
   );
 }
