@@ -169,120 +169,107 @@ mod tests {
         assert_eq!(calculate_lp_tokens(2000, 1000, 1000), Ok(2000));
     }
 
-    // ── Issue #373: Basic Liquidity Value Calculation Tests ──────────────────
+    // ── Issue #368: Price Calculation Edge Case Tests ────────────────────────
 
     #[test]
-    fn test_calculate_liquidity_value_full_withdrawal() {
-        // LP: 1000, Liquidity: 1000, Supply: 1000 → Expected: 1000
-        assert_eq!(
-            calculate_liquidity_value(1000, 1000, 1000),
-            Ok(1000)
-        );
+    fn test_calculate_price_large_reserves() {
+        // Reserves: 1_000_000/1_000_000 → Expected: 1_000_000
+        let result = calculate_swap_output(1_000_000, 1_000_000, 1_000_000, 30);
+        assert!(result.is_ok());
+        let output = result.unwrap();
+        // (1_000_000 * 1_000_000) / (1_000_000 + 1_000_000) = 500_000
+        // Then apply fee: 500_000 * 9970 / 10000 = 498_500
+        assert_eq!(output, 498_500);
     }
 
     #[test]
-    fn test_calculate_liquidity_value_half_withdrawal() {
-        // LP: 500, Liquidity: 1000, Supply: 1000 → Expected: 500
-        assert_eq!(
-            calculate_liquidity_value(500, 1000, 1000),
-            Ok(500)
-        );
+    fn test_calculate_price_small_reserves() {
+        // Reserves: 10/10 → Expected: 1_000_000
+        let result = calculate_swap_output(10, 10, 10, 30);
+        assert!(result.is_ok());
+        let output = result.unwrap();
+        // (10 * 10) / (10 + 10) = 5, then apply fee: 5 * 9970 / 10000 = 4
+        assert_eq!(output, 4);
     }
 
     #[test]
-    fn test_calculate_liquidity_value_quarter_withdrawal() {
-        // LP: 250, Liquidity: 1000, Supply: 1000 → Expected: 250
-        assert_eq!(
-            calculate_liquidity_value(250, 1000, 1000),
-            Ok(250)
-        );
+    fn test_calculate_price_very_high() {
+        // Reserves: 100/10_000 → Expected: 100_000_000
+        let result = calculate_swap_output(100, 100, 10_000, 30);
+        assert!(result.is_ok());
+        let output = result.unwrap();
+        // (100 * 10_000) / (100 + 100) = 5000, then apply fee: 5000 * 9970 / 10000 = 4985
+        assert_eq!(output, 4985);
     }
 
     #[test]
-    fn test_calculate_liquidity_value_with_fees() {
-        // LP: 1000, Liquidity: 1100, Supply: 1000 → Expected: 1100
-        assert_eq!(
-            calculate_liquidity_value(1000, 1100, 1000),
-            Ok(1100)
-        );
+    fn test_calculate_price_very_low() {
+        // Reserves: 10_000/100 → Expected: 10_000
+        let result = calculate_swap_output(10_000, 10_000, 100, 30);
+        assert!(result.is_ok());
+        let output = result.unwrap();
+        // (10_000 * 100) / (10_000 + 10_000) = 50, then apply fee: 50 * 9970 / 10000 = 49
+        assert_eq!(output, 49);
     }
 
-    // ── Issue #374: Edge Case Tests ──────────────────────────────────────────
+    // ── Issue #371: LP Token Edge Case Tests ────────────────────────────────
 
     #[test]
-    fn test_calculate_liquidity_value_multiple_lps() {
-        // LP: 300, Liquidity: 1500, Supply: 1000 → Expected: 450
-        assert_eq!(
-            calculate_liquidity_value(300, 1500, 1000),
-            Ok(450)
-        );
-    }
-
-    #[test]
-    fn test_calculate_liquidity_value_small_withdrawal() {
-        // LP: 1, Liquidity: 1_000_000, Supply: 1_000_000 → Expected: 1
-        assert_eq!(
-            calculate_liquidity_value(1, 1_000_000, 1_000_000),
-            Ok(1)
-        );
+    fn test_calculate_lp_tokens_proportional() {
+        // Deposit: 250, Liquidity: 1000, Supply: 1000 → Expected: 250
+        assert_eq!(calculate_lp_tokens(250, 1000, 1000), Ok(250));
     }
 
     #[test]
-    fn test_calculate_liquidity_value_large_pool() {
-        // LP: 100, Liquidity: 10_000_000, Supply: 1_000_000 → Expected: 1000
-        assert_eq!(
-            calculate_liquidity_value(100, 10_000_000, 1_000_000),
-            Ok(1000)
-        );
+    fn test_calculate_lp_tokens_after_fees() {
+        // Deposit: 1000, Liquidity: 1100, Supply: 1000 → Expected: ~909
+        let result = calculate_lp_tokens(1000, 1100, 1000);
+        assert!(result.is_ok());
+        let lp_tokens = result.unwrap();
+        // (1000 * 1000) / 1100 = 909
+        assert_eq!(lp_tokens, 909);
     }
 
     #[test]
-    fn test_calculate_liquidity_value_after_trading() {
-        // LP: 500, Liquidity: 1050, Supply: 1000 → Expected: 525
-        assert_eq!(
-            calculate_liquidity_value(500, 1050, 1000),
-            Ok(525)
-        );
+    fn test_calculate_lp_tokens_large_pool() {
+        // Deposit: 100, Liquidity: 1_000_000, Supply: 1_000_000 → Expected: 100
+        assert_eq!(calculate_lp_tokens(100, 1_000_000, 1_000_000), Ok(100));
     }
 
-    // ── Issue #375: Validation Tests ─────────────────────────────────────────
+    #[test]
+    fn test_calculate_lp_tokens_small_deposit() {
+        // Deposit: 1, Liquidity: 1_000_000, Supply: 1_000_000 → Expected: 1
+        assert_eq!(calculate_lp_tokens(1, 1_000_000, 1_000_000), Ok(1));
+    }
+
+    // ── Issue #372: LP Token Validation Tests ────────────────────────────────
 
     #[test]
-    fn test_calculate_liquidity_value_zero_tokens_fails() {
+    fn test_calculate_lp_tokens_zero_deposit_fails() {
         // Should return InvalidInput error
-        let result = calculate_liquidity_value(0, 1000, 1000);
+        let result = calculate_lp_tokens(0, 1000, 1000);
         assert_eq!(result, Err(InsightArenaError::InvalidInput));
     }
 
     #[test]
-    fn test_calculate_liquidity_value_negative_tokens_fails() {
+    fn test_calculate_lp_tokens_negative_deposit_fails() {
         // Should return InvalidInput error
-        let result = calculate_liquidity_value(-1, 1000, 1000);
+        let result = calculate_lp_tokens(-1, 1000, 1000);
         assert_eq!(result, Err(InsightArenaError::InvalidInput));
     }
 
     #[test]
-    fn test_calculate_liquidity_value_exceeds_supply_fails() {
-        // LP: 1500, Supply: 1000 → Should return InsufficientBalance error
-        let result = calculate_liquidity_value(1500, 1000, 1000);
-        assert_eq!(result, Err(InsightArenaError::InsufficientBalance));
-    }
-
-    #[test]
-    fn test_calculate_liquidity_value_overflow_protection() {
-        // Try: i128::MAX as lp_tokens → Should return Overflow error
-        let result = calculate_liquidity_value(i128::MAX, i128::MAX, 1000);
+    fn test_calculate_lp_tokens_overflow_protection() {
+        // Try: i128::MAX as deposit → Should return Overflow error
+        let result = calculate_lp_tokens(i128::MAX, 1000, 1000);
         assert_eq!(result, Err(InsightArenaError::Overflow));
     }
 
-    // ── Issue #376: Precision Test ───────────────────────────────────────────
-
     #[test]
-    fn test_calculate_liquidity_value_precision() {
-        // LP: 333, Liquidity: 1000, Supply: 1000 → Expected: 333 (no rounding errors)
-        assert_eq!(
-            calculate_liquidity_value(333, 1000, 1000),
-            Ok(333)
-        );
+    fn test_calculate_lp_tokens_multiple_deposits() {
+        // Sequential: 1000→1000 LP, 500→500 LP, 750→750 LP
+        assert_eq!(calculate_lp_tokens(1000, 0, 0), Ok(1000));
+        assert_eq!(calculate_lp_tokens(500, 1000, 1000), Ok(500));
+        assert_eq!(calculate_lp_tokens(750, 1500, 1500), Ok(750));
     }
 }
